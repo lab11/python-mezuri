@@ -125,7 +125,7 @@ class MezuriTable ():
 
 		"""
 
-		table = wink.getTable(self.url, self.app, 'brad_test2')
+		table = wink.getTable(self.url, self.app, self.table_name)
 
 		new_rows = {'rows': []}
 

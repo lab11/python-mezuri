@@ -4,8 +4,10 @@ import datetime
 
 import mezuri
 
+DB_IP = '146.148.49.96'
+
 print('Making a connection to Mezuri...')
-mt = mezuri.MezuriTable('http://162.222.181.71/odktables', 'mezuri-10100233')
+mt = mezuri.MezuriTable('http://'+DB_IP+'/odktables', 'mezuri-10100233')
 
 print("Create the table...")
 schema = {'timestamp': mezuri.ColumnTypes.datetime,
