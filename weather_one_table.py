@@ -33,13 +33,14 @@ DB_IP = '146.148.49.96'
 # 'WindDirDegrees'		'0'
 # 'DateUTC<br />'		'2014-08-30 04:53:00<br />']
 
-def create_table(mt, airport, year, month, day):
-	print('Creating table wunderground-{}-{}-{:02d}-{:02d}'.format(airport, year, month, day))
+def create_table(mt, airport):
+	table_name = 'wunderground-{}'.format(airport)
+	print('Fetching table {}'.format(table_name))
 	schema = {'timestamp': mezuri.ColumnTypes.datetime,
 			  'tempF':     mezuri.ColumnTypes.number,
 			  'humidity':  mezuri.ColumnTypes.number,
 			  }
-	mt.create('wunderground-{}-{}-{:02d}-{:02d}'.format(airport, year, month, day), schema)
+	mt.create(table_name, schema)
 
 def strip_html(iterable):
 	for l in iterable:
@@ -50,7 +51,7 @@ def strip_html(iterable):
 		yield l
 
 def add_data(mt, airport, year, month, day):
-	print("Fetching data from wunderground...")
+	print("Fetching data from wunderground for {}-{:02d}-{:02d}...".format(year, month, day))
 	URL = 'http://www.wunderground.com/history/airport/{}/{}/{}/{}/DailyHistory.html?format=1'.format(
 			airport, year, month, day)
 	r = requests.get(URL)
@@ -86,7 +87,7 @@ def add_data(mt, airport, year, month, day):
 	print('Adding data...')
 	mt.add_rows(data)
 
-def get_data(mt, airport, year, month, day):
+def get_data(mt):
 	print('Get the data back...')
 	rows = mt.get_rows(100)
 	for i,row in enumerate(rows):
@@ -107,6 +108,6 @@ if __name__ == '__main__':
 	print('Making a connection to Mezuri...')
 	mt = mezuri.MezuriTable('http://'+args.ip+'/odktables', 'mezuri-10100233')
 
-	create_table(mt, args.airport, args.year, args.month, args.day)
+	create_table(mt, args.airport)
 	add_data(mt, args.airport, args.year, args.month, args.day)
-	#get_data(mt, args.airport, args.year, args.month, args.day)
+	#get_data(mt)
