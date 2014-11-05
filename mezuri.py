@@ -158,7 +158,7 @@ class MezuriTable ():
 		                                   self.table_name,
 		                                   self.table_ETag,
 		                                   table_json,
-		                                   100)
+		                                   100000)
 
 	def get_rows (self, num_rows):
 
