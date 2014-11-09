@@ -28,6 +28,7 @@ class ColumnTypes ():
 	datetime = 'dateTime'
 	string = 'string'
 	number = 'number'
+	integer = 'integer'
 
 ###
 ### Main Objects
@@ -178,6 +179,8 @@ class MezuriTable ():
 					gotrow[col['column']] = datetime.datetime.strptime(col['value'], '%a %b %d %H:%M:%S %Y')
 				elif self.schema[col['column']] == ColumnTypes.number:
 					gotrow[col['column']] = float(col['value'])
+				elif self.schema[col['column']] == ColumnTypes.integer:
+					gotrow[col['column']] = int(col['value'])
 				else:
 					gotrow[col['column']] = col['value']
 			output.append(gotrow)
@@ -202,6 +205,10 @@ class MezuriTable ():
 				self.schema[col['elementName']] = ColumnTypes.string
 			elif col['elementType'] == 'number':
 				self.schema[col['elementName']] = ColumnTypes.number
+			elif col['elementType'] == 'integer':
+				self.schema[col['elementName']] = ColumnTypes.integer
+			else:
+				print(col['elementType'])
 
 	def _uuid_to_string (self, ETag):
 		return 'uuid:{}'.format(ETag)
