@@ -1,0 +1,169 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Historical TED Power Data</title>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="highstock.js"></script>
+<script src="exporting.js"></script>
+</head>
+
+<body>
+<p id="loading"></p>
+<div id="container" style="height: 800px; min-width: 310px"></div>
+<script>
+$(function () {
+    $("#loading").text("Loading data, please wait...");
+
+    var NUM_SERIES = 4;
+    var seriesOptions = [];
+    var seriesCounter = 0;
+
+    createChart = function () {
+        console.log("createChart");
+
+        $('#container').highcharts('StockChart', {
+                /*
+            rangeSelector : {
+                selected : 1
+            },
+            */
+            title : {
+                text : 'Historical Power Data'
+            },
+
+            yAxis: [{ // Primary yAxis
+                title: {
+                    text: 'Power',
+                },
+                labels: {
+                    format: '{value} kW',
+                },
+                height: '60%'
+                //opposite: true
+
+            }, { // Secondary yAxis
+                //gridLineWidth: 0,
+                title: {
+                    text: 'Temperature',
+                },
+                labels: {
+                    format: '{value}°C',
+                },
+                top: '65%',
+                height: '35%'
+            }],
+
+            series : seriesOptions
+            });
+
+        $("#loading").text('');
+    }
+
+    $.getJSON('../power/TED-Lab11.json-DS', function (data) {
+        seriesOptions[0] = {
+            name: "Lab11",
+            data: data
+        };
+
+        console.log("TED-Lab11 fetched.");
+        $("#loading").text($("#loading").text() + " TED-Lab11 Fetched,");
+
+        seriesCounter += 1;
+        if (seriesCounter == NUM_SERIES) createChart();
+    });
+
+    $.getJSON('../power/TED-Home1.json-DS', function (data) {
+        seriesOptions[1] = {
+            name: "Home1",
+            data: data
+        };
+
+        console.log("TED-Home1 fetched.");
+        $("#loading").text($("#loading").text() + " TED-Home1 Fetched,");
+
+        seriesCounter += 1;
+        if (seriesCounter == NUM_SERIES) createChart();
+    });
+
+    $.getJSON('../power/TED-Home2.json-DS', function (data) {
+        seriesOptions[2] = {
+            name: "Home2",
+            type: 'spline',
+            data: data
+        };
+
+        console.log("TED-Home2 fetched.");
+        $("#loading").text($("#loading").text() + " TED-Home2 Fetched,");
+
+        seriesCounter += 1;
+        if (seriesCounter == NUM_SERIES) createChart();
+    });
+
+
+    weather_rows = [];
+
+    createWeather = function () {
+        console.log("createWeather");
+        console.log(weather_rows);
+
+        seriesOptions[3] = {
+            name: "KARB",
+            data: weather_rows,
+            yAxis: 1,
+            tooltip: {
+                    valueDecimals: 1
+            },
+            fillColor : {
+                linearGradient : {
+                    x1: 0,
+                    y1: 0,
+                    x2: 0,
+                    y2: 1
+                },
+                stops : [
+                    [0, Highcharts.getOptions().colors[0]],
+                    [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                ]
+            },
+            threshold: null
+        };
+
+        seriesCounter += 1;
+        if (seriesCounter == NUM_SERIES) createChart();
+    }
+
+    parse_date = function (date_str) {
+        return Date.parse(date_str);
+    }
+
+    add_weather_rows = function (data) {
+        rowData = data.rows;
+        rowData.forEach(function (d) {
+            d.tempF = Number(d.orderedColumns[1].value);
+            d.timestamp = parse_date(d.orderedColumns[2].value);
+
+            weather_rows.push([d.timestamp, d.tempF]);
+        });
+    }
+
+    weather_callback = function (data) {
+        console.log("weather_callback");
+        console.log(data);
+        add_weather_rows(data);
+        console.log(weather_rows);
+        $("#loading").text($("#loading").text() + " Weather loaded " + weather_rows.length + " rows,");
+        if (data.hasMoreResults) {
+            $.getJSON('http://146.148.49.96/odktables/mezuri-10100233/tables/wunderground-KARB/ref/uuid:9720e6cc-afbc-4866-bf85-d18a5990b86b/query/lastUpdateDate?startTime=2014-01-01T12:00:00.000000000&cursor=' + data.webSafeResumeCursor, weather_callback);
+        } else {
+            createWeather();
+        }
+    }
+
+    $.getJSON('http://146.148.49.96/odktables/mezuri-10100233/tables/wunderground-KARB/ref/uuid:9720e6cc-afbc-4866-bf85-d18a5990b86b/query/lastUpdateDate?startTime=2014-01-01T12:00:00.000000000', weather_callback);
+
+});
+</script>
+</body>
+</html>
